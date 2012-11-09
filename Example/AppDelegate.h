@@ -23,22 +23,28 @@
 #import <Availability.h>
 
 #if __IPHONE_OS_VERSION_MIN_REQUIRED
-    #import <UIKit/UIKit.h>
 
-    @interface AppDelegate : NSObject <UIApplicationDelegate>
+#import <UIKit/UIKit.h>
 
-    @property (nonatomic, strong) UIWindow *window;
-    @property (nonatomic, strong) UINavigationController *navigationController;
+@interface AppDelegate : NSObject <UIApplicationDelegate> {
 
-    @end
+}
+
+@property (nonatomic, strong) UIWindow *window;
+@property (nonatomic, strong) UINavigationController *navigationController;
+
+@end
+
 #else
-    #import <Cocoa/Cocoa.h>
 
-    @interface AppDelegate : NSObject <NSApplicationDelegate>
+#import <Cocoa/Cocoa.h>
 
-    @property (strong) IBOutlet NSWindow *window;
-    @property (strong) IBOutlet NSTableView *tableView;
-    @property (strong) IBOutlet NSArrayController *postsArrayController;
+@interface AppDelegate : NSObject <NSApplicationDelegate>
 
-    @end
+@property (strong) IBOutlet NSWindow *window;
+@property (strong) IBOutlet NSTableView *tableView;
+@property (strong) IBOutlet NSArrayController *tweetsArrayController;
+
+@end
+
 #endif

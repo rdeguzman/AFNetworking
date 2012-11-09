@@ -1,4 +1,4 @@
-// AFAppDotNetAPIClient.h
+// TweetTableViewCell.h
 //
 // Copyright (c) 2012 Mattt Thompson (http://mattt.me/)
 // 
@@ -20,36 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import "AFAppDotNetAPIClient.h"
+#import <UIKit/UIKit.h>
 
-#import "AFJSONRequestOperation.h"
+@class Tweet;
 
-static NSString * const kAFAppDotNetAPIBaseURLString = @"https://alpha-api.app.net/";
+@interface TweetTableViewCell : UITableViewCell
 
-@implementation AFAppDotNetAPIClient
+@property (nonatomic, strong) Tweet *tweet;
 
-+ (AFAppDotNetAPIClient *)sharedClient {
-    static AFAppDotNetAPIClient *_sharedClient = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _sharedClient = [[AFAppDotNetAPIClient alloc] initWithBaseURL:[NSURL URLWithString:kAFAppDotNetAPIBaseURLString]];
-    });
-    
-    return _sharedClient;
-}
-
-- (id)initWithBaseURL:(NSURL *)url {
-    self = [super initWithBaseURL:url];
-    if (!self) {
-        return nil;
-    }
-    
-    [self registerHTTPOperationClass:[AFJSONRequestOperation class]];
-    
-    // Accept HTTP Header; see http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1
-	[self setDefaultHeader:@"Accept" value:@"application/json"];
-    
-    return self;
-}
++ (CGFloat)heightForCellWithTweet:(Tweet *)tweet;
 
 @end

@@ -34,11 +34,11 @@ static dispatch_queue_t xml_request_operation_processing_queue() {
 }
 
 @interface AFXMLRequestOperation ()
-@property (readwrite, nonatomic, strong) NSXMLParser *responseXMLParser;
+@property (readwrite, nonatomic) NSXMLParser *responseXMLParser;
 #ifdef __MAC_OS_X_VERSION_MIN_REQUIRED
-@property (readwrite, nonatomic, strong) NSXMLDocument *responseXMLDocument;
+@property (readwrite, nonatomic, retain) NSXMLDocument *responseXMLDocument;
 #endif
-@property (readwrite, nonatomic, strong) NSError *XMLError;
+@property (readwrite, nonatomic) NSError *XMLError;
 @end
 
 @implementation AFXMLRequestOperation

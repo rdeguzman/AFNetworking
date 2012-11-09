@@ -21,9 +21,8 @@
 // THE SOFTWARE.
 
 #import "AFURLConnectionOperation.h"
-
 #if __IPHONE_OS_VERSION_MIN_REQUIRED
-    #import <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 #endif
 
 #if !__has_feature(objc_arc)
@@ -185,7 +184,11 @@ static inline BOOL AFStateTransitionIsValid(AFOperationState fromState, AFOperat
     self.request = urlRequest;
     
     self.outputStream = [NSOutputStream outputStreamToMemory];
-
+    NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
+    for (NSString *runLoopMode in self.runLoopModes) {
+        [self.outputStream scheduleInRunLoop:runLoop forMode:runLoopMode];
+    }
+    
     self.state = AFOperationReadyState;
 	
     return self;
@@ -214,10 +217,10 @@ static inline BOOL AFStateTransitionIsValid(AFOperationState fromState, AFOperat
     if (!block) {
         [super setCompletionBlock:nil];
     } else {
-        __weak __typeof(&*self)weakSelf = self;
+        __unsafe_unretained id _blockSelf = self;
         [super setCompletionBlock:^ {
             block();
-            [weakSelf setCompletionBlock:nil];
+            [_blockSelf setCompletionBlock:nil];
         }];
     }
     [self.lock unlock];
@@ -241,6 +244,7 @@ static inline BOOL AFStateTransitionIsValid(AFOperationState fromState, AFOperat
     }
     
     [self willChangeValueForKey:@"outputStream"];
+    
     if (_outputStream) {
         [_outputStream close];
     }
@@ -253,20 +257,15 @@ static inline BOOL AFStateTransitionIsValid(AFOperationState fromState, AFOperat
     [self.lock lock];
     if (!self.backgroundTaskIdentifier) {    
         UIApplication *application = [UIApplication sharedApplication];
-        __weak __typeof(&*self)weakSelf = self;
         self.backgroundTaskIdentifier = [application beginBackgroundTaskWithExpirationHandler:^{
-            __strong __typeof(&*weakSelf)strongSelf = weakSelf;
-            
             if (handler) {
                 handler();
             }
             
-            if (strongSelf) {
-                [strongSelf cancel];
-                
-                [application endBackgroundTask:strongSelf.backgroundTaskIdentifier];
-                strongSelf.backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-            }
+            [self cancel];
+            
+            [application endBackgroundTask:self.backgroundTaskIdentifier];
+            self.backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }];
     }
     [self.lock unlock];
@@ -326,15 +325,12 @@ static inline BOOL AFStateTransitionIsValid(AFOperationState fromState, AFOperat
 - (NSString *)responseString {
     [self.lock lock];
     if (!_responseString && self.response && self.responseData) {
-        NSStringEncoding stringEncoding = NSUTF8StringEncoding;
+        NSStringEncoding textEncoding = NSUTF8StringEncoding;
         if (self.response.textEncodingName) {
-            CFStringEncoding IANAEncoding = CFStringConvertIANACharSetNameToEncoding((__bridge CFStringRef)self.response.textEncodingName);
-            if (IANAEncoding != kCFStringEncodingInvalidId) {
-                stringEncoding = CFStringConvertEncodingToNSStringEncoding(IANAEncoding);
-            }
+            textEncoding = CFStringConvertEncodingToNSStringEncoding(CFStringConvertIANACharSetNameToEncoding((__bridge CFStringRef)self.response.textEncodingName));
         }
         
-        self.responseString = [[NSString alloc] initWithData:self.responseData encoding:stringEncoding];
+        self.responseString = [[NSString alloc] initWithData:self.responseData encoding:textEncoding];
     }
     [self.lock unlock];
     
@@ -520,8 +516,8 @@ didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
     }
 }
 
-- (void)connection:(NSURLConnection __unused *)connection
-   didSendBodyData:(NSInteger)bytesWritten
+- (void)connection:(NSURLConnection *)__unused connection 
+   didSendBodyData:(NSInteger)bytesWritten 
  totalBytesWritten:(NSInteger)totalBytesWritten 
 totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
 {
@@ -532,7 +528,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     }
 }
 
-- (void)connection:(NSURLConnection __unused *)connection
+- (void)connection:(NSURLConnection *)__unused connection 
 didReceiveResponse:(NSURLResponse *)response 
 {
     self.response = response;
@@ -540,7 +536,7 @@ didReceiveResponse:(NSURLResponse *)response
     [self.outputStream open];
 }
 
-- (void)connection:(NSURLConnection __unused *)connection
+- (void)connection:(NSURLConnection *)__unused connection 
     didReceiveData:(NSData *)data
 {
     self.totalBytesRead += [data length];
@@ -557,7 +553,7 @@ didReceiveResponse:(NSURLResponse *)response
     }
 }
 
-- (void)connectionDidFinishLoading:(NSURLConnection __unused *)connection {
+- (void)connectionDidFinishLoading:(NSURLConnection *)__unused connection {
     self.responseData = [self.outputStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
     
     [self.outputStream close];
@@ -567,7 +563,7 @@ didReceiveResponse:(NSURLResponse *)response
     self.connection = nil;
 }
 
-- (void)connection:(NSURLConnection __unused *)connection
+- (void)connection:(NSURLConnection *)__unused connection 
   didFailWithError:(NSError *)error 
 {    
     self.error = error;
@@ -603,7 +599,7 @@ didReceiveResponse:(NSURLResponse *)response
         return nil;
     }
 
-    self.state = (AFOperationState)[aDecoder decodeIntegerForKey:@"state"];
+    self.state = [aDecoder decodeIntegerForKey:@"state"];
     self.cancelled = [aDecoder decodeBoolForKey:@"isCancelled"];
     self.response = [aDecoder decodeObjectForKey:@"response"];
     self.error = [aDecoder decodeObjectForKey:@"error"];

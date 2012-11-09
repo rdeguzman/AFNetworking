@@ -1,4 +1,4 @@
-// Post.h
+// AFTwitterAPIClient.h
 //
 // Copyright (c) 2012 Mattt Thompson (http://mattt.me/)
 // 
@@ -20,19 +20,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
+#import "AFTwitterAPIClient.h"
 
-@class User;
+#import "AFJSONRequestOperation.h"
 
-@interface Post : NSObject
+static NSString * const kAFTwitterAPIBaseURLString = @"http://api.twitter.com/1/";
 
-@property (readonly) NSUInteger postID;
-@property (readonly) NSString *text;
+@implementation AFTwitterAPIClient
 
-@property (readonly) User *user;
++ (AFTwitterAPIClient *)sharedClient {
+    static AFTwitterAPIClient *_sharedClient = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _sharedClient = [[AFTwitterAPIClient alloc] initWithBaseURL:[NSURL URLWithString:kAFTwitterAPIBaseURLString]];
+    });
+    
+    return _sharedClient;
+}
 
-- (id)initWithAttributes:(NSDictionary *)attributes;
-
-+ (void)globalTimelinePostsWithBlock:(void (^)(NSArray *posts, NSError *error))block;
+- (id)initWithBaseURL:(NSURL *)url {
+    self = [super initWithBaseURL:url];
+    if (!self) {
+        return nil;
+    }
+    
+    [self registerHTTPOperationClass:[AFJSONRequestOperation class]];
+    
+    // Accept HTTP Header; see http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1
+	[self setDefaultHeader:@"Accept" value:@"application/json"];
+    
+    return self;
+}
 
 @end

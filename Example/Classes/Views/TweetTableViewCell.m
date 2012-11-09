@@ -20,19 +20,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import "PostTableViewCell.h"
+#import "TweetTableViewCell.h"
 
-#import "Post.h"
+#import "Tweet.h"
 #import "User.h"
 
 #import "UIImageView+AFNetworking.h"
 
-@implementation PostTableViewCell {
+@implementation TweetTableViewCell {
 @private
-    __strong Post *_post;
+    __strong Tweet *_tweet;    
 }
 
-@synthesize post = _post;
+@synthesize tweet = _tweet;
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
@@ -49,18 +49,18 @@
     return self;
 }
 
-- (void)setPost:(Post *)post {
-    _post = post;
+- (void)setTweet:(Tweet *)tweet {
+    _tweet = tweet;
 
-    self.textLabel.text = _post.user.username;
-    self.detailTextLabel.text = _post.text;
-    [self.imageView setImageWithURL:_post.user.avatarImageURL placeholderImage:[UIImage imageNamed:@"profile-image-placeholder"]];
+    self.textLabel.text = _tweet.user.username;
+    self.detailTextLabel.text = _tweet.text;
+    [self.imageView setImageWithURL:_tweet.user.profileImageURL placeholderImage:[UIImage imageNamed:@"profile-image-placeholder"]];
     
     [self setNeedsLayout];
 }
 
-+ (CGFloat)heightForCellWithPost:(Post *)post {
-    CGSize sizeToFit = [post.text sizeWithFont:[UIFont systemFontOfSize:12.0f] constrainedToSize:CGSizeMake(220.0f, CGFLOAT_MAX) lineBreakMode:UILineBreakModeWordWrap];
++ (CGFloat)heightForCellWithTweet:(Tweet *)tweet {
+    CGSize sizeToFit = [tweet.text sizeWithFont:[UIFont systemFontOfSize:12.0f] constrainedToSize:CGSizeMake(220.0f, CGFLOAT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     
     return fmaxf(70.0f, sizeToFit.height + 45.0f);
 }
@@ -74,7 +74,7 @@
     self.textLabel.frame = CGRectMake(70.0f, 10.0f, 240.0f, 20.0f);
     
     CGRect detailTextLabelFrame = CGRectOffset(self.textLabel.frame, 0.0f, 25.0f);
-    detailTextLabelFrame.size.height = [[self class] heightForCellWithPost:_post] - 45.0f;
+    detailTextLabelFrame.size.height = [[self class] heightForCellWithTweet:_tweet] - 45.0f;
     self.detailTextLabel.frame = detailTextLabelFrame;
 }
 
